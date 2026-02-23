@@ -19,6 +19,7 @@ import {
   reportsService,
   type CreateProductionDto,
 } from '@/lib/services';
+import { getLocalDateString } from '@/lib/date-utils';
 import type { Production, Store, Supply } from '@/types';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -32,9 +33,7 @@ export default function ProductionsScreen() {
   const queryClient = useQueryClient();
 
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
-  const [selectedDate, setSelectedDate] = useState(() =>
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString);
   const [showForm, setShowForm] = useState(false);
   const [formDate, setFormDate] = useState(selectedDate);
   const [formStoreId, setFormStoreId] = useState<number | undefined>();

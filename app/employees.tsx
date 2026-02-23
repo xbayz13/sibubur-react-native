@@ -18,6 +18,7 @@ import {
   attendancesService,
   storesService,
 } from '@/lib/services';
+import { getLocalDateString } from '@/lib/date-utils';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -31,9 +32,7 @@ export default function EmployeesScreen() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
-  const [selectedDate, setSelectedDate] = useState(() =>
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString);
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
   const [showAttendanceForm, setShowAttendanceForm] = useState(false);
   const [attendanceMap, setAttendanceMap] = useState<Map<number, AttendanceStatus>>(new Map());

@@ -19,6 +19,7 @@ import {
   storesService,
 } from '@/lib/services';
 import { getErrorMessage } from '@/lib/error-utils';
+import { getLocalDateString } from '@/lib/date-utils';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -31,9 +32,7 @@ export default function ExpensesScreen() {
   const queryClient = useQueryClient();
 
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
-  const [dateFilter, setDateFilter] = useState(() =>
-    new Date().toISOString().split('T')[0]
-  );
+  const [dateFilter, setDateFilter] = useState(getLocalDateString);
   const [showForm, setShowForm] = useState(false);
   const [formCategoryId, setFormCategoryId] = useState(0);
   const [formStoreId, setFormStoreId] = useState(0);

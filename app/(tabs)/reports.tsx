@@ -10,6 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { reportsService, storesService } from '@/lib/services';
+import { getLocalDateString } from '@/lib/date-utils';
 import type { DailyReport, MonthlyReport, YearlyReport } from '@/types';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
@@ -21,9 +22,7 @@ export default function ReportsScreen() {
 
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
-  const [dailyDate, setDailyDate] = useState(() =>
-    new Date().toISOString().split('T')[0]
-  );
+  const [dailyDate, setDailyDate] = useState(getLocalDateString);
   const [monthlyYear, setMonthlyYear] = useState(new Date().getFullYear());
   const [monthlyMonth, setMonthlyMonth] = useState(new Date().getMonth() + 1);
   const [yearlyYear, setYearlyYear] = useState(new Date().getFullYear());

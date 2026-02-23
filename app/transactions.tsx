@@ -17,6 +17,7 @@ import {
   transactionsService,
   storesService,
 } from '@/lib/services';
+import { getLocalDateString } from '@/lib/date-utils';
 import Input from '@/components/ui/Input';
 import type { Transaction } from '@/types';
 
@@ -26,9 +27,7 @@ export default function TransactionsScreen() {
   const { showToast } = useToast();
 
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
-  const [dateFilter, setDateFilter] = useState(() =>
-    new Date().toISOString().split('T')[0]
-  );
+  const [dateFilter, setDateFilter] = useState(getLocalDateString);
 
   const { data: storesData } = useQuery({
     queryKey: ['stores'],

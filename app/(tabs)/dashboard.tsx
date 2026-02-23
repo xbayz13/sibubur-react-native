@@ -16,6 +16,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { reportsService } from '@/lib/services/reports';
 import { suppliesService } from '@/lib/services/supplies';
+import { getLocalDateString } from '@/lib/date-utils';
 
 interface DailyStats {
   revenue: number;
@@ -34,12 +35,12 @@ async function fetchDashboardData(): Promise<{
   stats: DailyStats;
   chartData: ChartData[];
 }> {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateString();
   const dates: string[] = [];
   for (let i = 6; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    dates.push(date.toISOString().split('T')[0]);
+    dates.push(getLocalDateString(date));
   }
 
   const [todayReport, lowStockSupplies, ...chartReports] = await Promise.all([

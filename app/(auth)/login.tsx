@@ -9,11 +9,13 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { getErrorMessage } from '@/lib/error-utils';
 import { colors } from '@/constants/colors';
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -31,6 +33,7 @@ export default function LoginScreen() {
 
     try {
       await login({ username: username.trim(), password });
+      router.replace('/(tabs)/dashboard' as never);
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
