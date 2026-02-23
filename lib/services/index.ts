@@ -26,4 +26,6 @@ export {
 export { productAddonsService } from './product-addons';
 export { usersService } from './users';
 export { rolesService } from './roles';
+export { permissionsService } from './permissions';
+export { rolePermissionsService } from './role-permissions';
 export { bmkgService } from './bmkg';

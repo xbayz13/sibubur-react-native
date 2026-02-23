@@ -92,6 +92,10 @@ export default function RolesScreen() {
     ]);
   };
 
+  const openPermissions = (r: Role) => {
+    router.push(`/roles/${r.id}/permissions` as never);
+  };
+
   const items: Role[] = roles ?? [];
 
   return (
@@ -112,6 +116,9 @@ export default function RolesScreen() {
           <View style={styles.card}>
             <Text style={styles.cardName}>{item.name}</Text>
             <View style={styles.cardActions}>
+              <Pressable onPress={() => openPermissions(item)}>
+                <Text style={styles.actionPermission}>Permission</Text>
+              </Pressable>
               <Pressable onPress={() => openEdit(item)}>
                 <Text style={styles.actionEdit}>Edit</Text>
               </Pressable>
@@ -161,7 +168,8 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
   },
   cardName: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  cardActions: { flexDirection: 'row', gap: 16, marginTop: 12 },
+  cardActions: { flexDirection: 'row', gap: 16, marginTop: 12, flexWrap: 'wrap' },
+  actionPermission: { fontSize: 14, color: '#7c3aed', fontWeight: '500' },
   actionEdit: { fontSize: 14, color: '#4f46e5', fontWeight: '500' },
   actionDelete: { fontSize: 14, color: '#ef4444', fontWeight: '500' },
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 8 },

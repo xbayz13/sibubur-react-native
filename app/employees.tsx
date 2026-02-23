@@ -90,6 +90,7 @@ export default function EmployeesScreen() {
       data: Array<{ employeeId: number; status: 'present' | 'absent'; existingId?: number }>
     ) => {
       let success = 0;
+      let lastError: unknown = null;
       for (const d of data) {
         try {
           if (d.existingId) {
@@ -106,9 +107,12 @@ export default function EmployeesScreen() {
             });
           }
           success++;
-        } catch {
-          // skip failed
+        } catch (err) {
+          lastError = err;
         }
+      }
+      if (data.length > 0 && success === 0) {
+        throw lastError ?? new Error('Gagal menyimpan absensi');
       }
       return success;
     },

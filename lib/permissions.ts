@@ -22,6 +22,7 @@ export const MENU_ITEMS_PERMISSIONS: Record<string, string[]> = {
   ],
   Pengguna: ['users.read'],
   'Role & Izin': ['roles.read'],
+  Permission: ['permissions.read'],
   Pengaturan: [],
 };
 

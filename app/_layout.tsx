@@ -46,6 +46,7 @@ function RootLayoutNav() {
       <Stack.Screen name="master-data" options={{ presentation: 'card' }} />
       <Stack.Screen name="users" options={{ presentation: 'card' }} />
       <Stack.Screen name="roles" options={{ presentation: 'card' }} />
+      <Stack.Screen name="permissions" options={{ presentation: 'card' }} />
       <Stack.Screen name="settings" options={{ presentation: 'card' }} />
     </Stack>
   );

@@ -19,6 +19,7 @@ const MENU_ITEMS: Array<{
   { key: 'master-data', route: '/master-data', label: 'Data Master', icon: 'layers' },
   { key: 'users', route: '/users', label: 'Pengguna', icon: 'person' },
   { key: 'roles', route: '/roles', label: 'Role & Izin', icon: 'shield-checkmark' },
+  { key: 'permissions', route: '/permissions', label: 'Permission', icon: 'key' },
   { key: 'settings', route: '/settings', label: 'Pengaturan', icon: 'settings' },
 ];
 

@@ -183,8 +183,9 @@ export default function OrdersScreen() {
 
   const handlePay = useCallback(() => {
     if (!selectedOrder || !selectedStoreId || !selectedPaymentMethodId) return;
+    const orderTotal = Number(selectedOrder.totalAmount);
     const amount = parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) || 0;
-    if (amount < selectedOrder.totalAmount) {
+    if (amount < orderTotal) {
       showToast('Jumlah pembayaran kurang', 'error');
       return;
     }
@@ -459,7 +460,7 @@ export default function OrdersScreen() {
               disabled={
                 !selectedPaymentMethodId ||
                 !paymentAmount ||
-                parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) < selectedOrder.totalAmount ||
+                parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) < Number(selectedOrder?.totalAmount ?? 0) ||
                 payOrderMutation.isPending
               }
               loading={payOrderMutation.isPending}
