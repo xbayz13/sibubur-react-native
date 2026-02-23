@@ -12,7 +12,7 @@ export default function Index() {
     if (loading) return;
 
     if (isAuthenticated) {
-      router.replace('/home');
+      router.replace('/(tabs)/dashboard' as never);
     } else {
       router.replace('/login');
     }

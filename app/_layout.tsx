@@ -1,7 +1,17 @@
 import { useEffect } from 'react';
 import { Stack, useRouter } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { ToastProvider } from '@/contexts/ToastContext';
 import { setOnUnauthorized } from '@/lib/api';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+    },
+  },
+});
 
 function RootLayoutNav() {
   const { loading, isAuthenticated } = useAuth();
@@ -12,6 +22,13 @@ function RootLayoutNav() {
       router.replace('/login');
     });
   }, [router]);
+
+  // Redirect to login when user logs out (isAuthenticated becomes false while on protected routes)
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [loading, isAuthenticated, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -24,8 +41,12 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ToastProvider>
+          <RootLayoutNav />
+        </ToastProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
