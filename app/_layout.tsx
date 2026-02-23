@@ -40,6 +40,10 @@ function RootLayoutNav() {
       <Stack.Screen name="supplies" options={{ presentation: 'card' }} />
       <Stack.Screen name="expenses" options={{ presentation: 'card' }} />
       <Stack.Screen name="employees" options={{ presentation: 'card' }} />
+      <Stack.Screen name="master-data" options={{ presentation: 'card' }} />
+      <Stack.Screen name="users" options={{ presentation: 'card' }} />
+      <Stack.Screen name="roles" options={{ presentation: 'card' }} />
+      <Stack.Screen name="settings" options={{ presentation: 'card' }} />
     </Stack>
   );
 }

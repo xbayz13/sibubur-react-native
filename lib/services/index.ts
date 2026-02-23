@@ -23,3 +23,6 @@ export {
   attendancesService,
   type CreateAttendanceDto,
 } from './attendances';
+export { productAddonsService } from './product-addons';
+export { usersService } from './users';
+export { rolesService } from './roles';

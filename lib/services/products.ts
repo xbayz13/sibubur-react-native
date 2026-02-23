@@ -55,4 +55,56 @@ export const productsService = {
     );
     return transformProduct(response.data);
   },
+
+  async create(product: {
+    name: string;
+    description?: string;
+    price: number;
+    productCategoryId?: number;
+  }): Promise<Product> {
+    const response = await apiClient.post<Record<string, unknown>>(
+      '/products',
+      product
+    );
+    return transformProduct(response.data);
+  },
+
+  async update(
+    id: number,
+    product: {
+      name?: string;
+      description?: string;
+      price?: number;
+      productCategoryId?: number;
+    }
+  ): Promise<Product> {
+    const response = await apiClient.patch<Record<string, unknown>>(
+      `/products/${id}`,
+      product
+    );
+    return transformProduct(response.data);
+  },
+
+  async delete(id: number): Promise<void> {
+    await apiClient.delete(`/products/${id}`);
+  },
+
+  async addAddon(
+    productId: number,
+    addonId: number,
+    addonPriceOverride?: number
+  ): Promise<Product> {
+    const response = await apiClient.post<Record<string, unknown>>(
+      `/products/${productId}/addons`,
+      { addonId, addonPriceOverride }
+    );
+    return transformProduct(response.data);
+  },
+
+  async removeAddon(productId: number, addonId: number): Promise<Product> {
+    const response = await apiClient.delete<Record<string, unknown>>(
+      `/products/${productId}/addons/${addonId}`
+    );
+    return transformProduct(response.data as Record<string, unknown>);
+  },
 };

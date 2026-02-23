@@ -22,4 +22,18 @@ export const storesService = {
     const response = await apiClient.get<Store>(`/stores/${id}`);
     return response.data;
   },
+
+  async create(store: { name: string }): Promise<Store> {
+    const response = await apiClient.post<Store>('/stores', store);
+    return response.data;
+  },
+
+  async update(id: number, store: { name?: string }): Promise<Store> {
+    const response = await apiClient.patch<Store>(`/stores/${id}`, store);
+    return response.data;
+  },
+
+  async delete(id: number): Promise<void> {
+    await apiClient.delete(`/stores/${id}`);
+  },
 };

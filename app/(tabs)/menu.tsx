@@ -2,11 +2,29 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { canAccessMenuItem } from '@/lib/permissions';
 import Button from '@/components/ui/Button';
+
+const MENU_ITEMS: Array<{
+  key: string;
+  route: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}> = [
+  { key: 'productions', route: '/productions', label: 'Produksi Harian', icon: 'restaurant' },
+  { key: 'transactions', route: '/transactions', label: 'Transaksi', icon: 'card' },
+  { key: 'supplies', route: '/supplies', label: 'Persediaan', icon: 'cube' },
+  { key: 'expenses', route: '/expenses', label: 'Pengeluaran', icon: 'wallet' },
+  { key: 'employees', route: '/employees', label: 'Karyawan & Absensi', icon: 'people' },
+  { key: 'master-data', route: '/master-data', label: 'Data Master', icon: 'layers' },
+  { key: 'users', route: '/users', label: 'Pengguna', icon: 'person' },
+  { key: 'roles', route: '/roles', label: 'Role & Izin', icon: 'shield-checkmark' },
+  { key: 'settings', route: '/settings', label: 'Pengaturan', icon: 'settings' },
+];
 
 export default function MenuScreen() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
 
   return (
     <View style={styles.container}>
@@ -16,46 +34,20 @@ export default function MenuScreen() {
       </Text>
 
       <View style={styles.menuList}>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/productions' as never)}
-        >
-          <Ionicons name="restaurant" size={24} color="#4f46e5" />
-          <Text style={styles.menuText}>Produksi Harian</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </Pressable>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/transactions' as never)}
-        >
-          <Ionicons name="card" size={24} color="#4f46e5" />
-          <Text style={styles.menuText}>Transaksi</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </Pressable>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/supplies' as never)}
-        >
-          <Ionicons name="cube" size={24} color="#4f46e5" />
-          <Text style={styles.menuText}>Persediaan</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </Pressable>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/expenses' as never)}
-        >
-          <Ionicons name="wallet" size={24} color="#4f46e5" />
-          <Text style={styles.menuText}>Pengeluaran</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </Pressable>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/employees' as never)}
-        >
-          <Ionicons name="people" size={24} color="#4f46e5" />
-          <Text style={styles.menuText}>Karyawan & Absensi</Text>
-          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
-        </Pressable>
+        {MENU_ITEMS.map((item) => {
+          if (!canAccessMenuItem(item.label, hasPermission)) return null;
+          return (
+            <Pressable
+              key={item.key}
+              style={styles.menuItem}
+              onPress={() => router.push(item.route as never)}
+            >
+              <Ionicons name={item.icon} size={24} color="#4f46e5" />
+              <Text style={styles.menuText}>{item.label}</Text>
+              <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+            </Pressable>
+          );
+        })}
       </View>
 
       <View style={styles.actions}>
