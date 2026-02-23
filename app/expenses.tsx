@@ -18,6 +18,7 @@ import {
   expenseCategoriesService,
   storesService,
 } from '@/lib/services';
+import { getErrorMessage } from '@/lib/error-utils';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -85,8 +86,7 @@ export default function ExpensesScreen() {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      showToast(msg || 'Gagal menambahkan pengeluaran', 'error');
+      showToast(getErrorMessage(err), 'error');
     },
   });
 

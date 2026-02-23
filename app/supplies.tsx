@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/contexts/ToastContext';
 import { suppliesService } from '@/lib/services';
+import { getErrorMessage } from '@/lib/error-utils';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -48,8 +49,7 @@ export default function SuppliesScreen() {
       queryClient.invalidateQueries({ queryKey: ['supplies'] });
     },
     onError: (err: unknown) => {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      showToast(msg || 'Gagal menambahkan stok', 'error');
+      showToast(getErrorMessage(err), 'error');
     },
   });
 

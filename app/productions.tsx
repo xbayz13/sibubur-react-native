@@ -112,12 +112,6 @@ export default function ProductionsScreen() {
     setShowForm(true);
   }, [selectedDate, selectedStoreId, stores]);
 
-  useEffect(() => {
-    if (showForm && recommendations) {
-      setFormPorridgeAmount(recommendations.recommendedAmount?.toString() ?? '');
-    }
-  }, [showForm, recommendations]);
-
   const handleSubmit = useCallback(() => {
     if (!formStoreId) {
       showToast('Pilih toko', 'error');

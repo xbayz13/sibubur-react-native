@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
+import { getErrorMessage } from '@/lib/error-utils';
 import { colors } from '@/constants/colors';
 
 export default function LoginScreen() {
@@ -31,11 +32,7 @@ export default function LoginScreen() {
     try {
       await login({ username: username.trim(), password });
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        (err as Error)?.message ??
-        'Login gagal. Periksa username dan password.';
-      setError(message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

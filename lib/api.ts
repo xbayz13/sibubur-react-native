@@ -55,6 +55,7 @@ apiClient.interceptors.response.use(
       }
       onUnauthorized?.();
     }
+    // Preserve error for caller; network errors are handled via getErrorMessage
     return Promise.reject(error);
   }
 );
