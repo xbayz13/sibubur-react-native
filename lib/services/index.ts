@@ -13,3 +13,13 @@ export {
 } from './productions';
 export { reportsService } from './reports';
 export { suppliesService } from './supplies';
+export {
+  expensesService,
+  type CreateExpenseDto,
+} from './expenses';
+export { expenseCategoriesService } from './expense-categories';
+export { employeesService } from './employees';
+export {
+  attendancesService,
+  type CreateAttendanceDto,
+} from './attendances';

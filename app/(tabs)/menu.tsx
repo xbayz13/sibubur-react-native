@@ -32,6 +32,30 @@ export default function MenuScreen() {
           <Text style={styles.menuText}>Transaksi</Text>
           <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
         </Pressable>
+        <Pressable
+          style={styles.menuItem}
+          onPress={() => router.push('/supplies' as never)}
+        >
+          <Ionicons name="cube" size={24} color="#4f46e5" />
+          <Text style={styles.menuText}>Persediaan</Text>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        </Pressable>
+        <Pressable
+          style={styles.menuItem}
+          onPress={() => router.push('/expenses' as never)}
+        >
+          <Ionicons name="wallet" size={24} color="#4f46e5" />
+          <Text style={styles.menuText}>Pengeluaran</Text>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        </Pressable>
+        <Pressable
+          style={styles.menuItem}
+          onPress={() => router.push('/employees' as never)}
+        >
+          <Ionicons name="people" size={24} color="#4f46e5" />
+          <Text style={styles.menuText}>Karyawan & Absensi</Text>
+          <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+        </Pressable>
       </View>
 
       <View style={styles.actions}>
