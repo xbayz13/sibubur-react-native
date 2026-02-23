@@ -21,7 +21,8 @@
       },
       "package": "com.sibubur.pos.mobile",
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["BLUETOOTH", "BLUETOOTH_CONNECT", "BLUETOOTH_SCAN"]
     },
     "web": {
       "output": "static",

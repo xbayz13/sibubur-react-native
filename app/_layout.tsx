@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { setOnUnauthorized } from '@/lib/api';
+import { loadPrintSettingsCache } from '@/lib/print-settings';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const queryClient = new QueryClient({
@@ -25,6 +26,10 @@ function RootLayoutNav() {
       router.replace('/login');
     });
   }, [router]);
+
+  useEffect(() => {
+    loadPrintSettingsCache();
+  }, []);
 
   // Redirect to login when user logs out (isAuthenticated becomes false while on protected routes)
   useEffect(() => {

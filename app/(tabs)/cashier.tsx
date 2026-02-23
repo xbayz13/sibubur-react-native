@@ -22,6 +22,13 @@ import {
   CreateTransactionDto,
 } from '@/lib/services';
 import type { Product, Store, PaymentMethod, CreateOrderDto, Order } from '@/types';
+import {
+  isAutoPrintKitchenEnabled,
+  isAutoPrintCustomerEnabled,
+  shouldShowKitchenPrintButton,
+  shouldShowCustomerPrintButton,
+} from '@/lib/print-settings';
+import ReceiptPrint from '@/components/ReceiptPrint';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
@@ -54,6 +61,14 @@ export default function CashierScreen() {
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+  const [receiptType, setReceiptType] = useState<'kitchen' | 'customer'>('kitchen');
+  const [receiptTransaction, setReceiptTransaction] = useState<{
+    amount: number;
+    change?: number;
+    paymentMethod?: { name: string };
+  } | null>(null);
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
     queryKey: ['products', 100],
@@ -205,6 +220,12 @@ export default function CashierScreen() {
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       showToast('Pesanan berhasil dibuat', 'success');
+      if (isAutoPrintKitchenEnabled()) {
+        setReceiptOrder(order);
+        setReceiptType('kitchen');
+        setReceiptTransaction(null);
+        setShowReceipt(true);
+      }
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       showToast(err?.response?.data?.message ?? 'Gagal membuat pesanan', 'error');
@@ -213,13 +234,26 @@ export default function CashierScreen() {
 
   const createTransactionMutation = useMutation({
     mutationFn: (tx: CreateTransactionDto) => transactionsService.create(tx),
-    onSuccess: () => {
+    onSuccess: (transaction) => {
       setShowPayment(false);
+      const order = transaction.order;
       setCurrentOrder(null);
       setSelectedPaymentMethodId(null);
       setPaymentAmount('');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       showToast('Pembayaran berhasil', 'success');
+      if (isAutoPrintCustomerEnabled() && order) {
+        const orderTotal = Number(order.totalAmount);
+        const change = Math.max(0, transaction.amount - orderTotal);
+        setReceiptOrder(order);
+        setReceiptType('customer');
+        setReceiptTransaction({
+          amount: transaction.amount,
+          change,
+          paymentMethod: transaction.paymentMethod,
+        });
+        setShowReceipt(true);
+      }
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       showToast(err?.response?.data?.message ?? 'Gagal memproses pembayaran', 'error');
@@ -529,6 +563,30 @@ export default function CashierScreen() {
           loading={createTransactionMutation.isPending}
         />
       </Modal>
+
+      {showReceipt && receiptOrder && shouldShowKitchenPrintButton() && receiptType === 'kitchen' && (
+        <ReceiptPrint
+          order={receiptOrder}
+          type="kitchen"
+          onClose={() => {
+            setShowReceipt(false);
+            setReceiptOrder(null);
+          }}
+          autoPrint={isAutoPrintKitchenEnabled()}
+        />
+      )}
+      {showReceipt && receiptOrder && shouldShowCustomerPrintButton() && receiptType === 'customer' && (
+        <ReceiptPrint
+          order={receiptOrder}
+          type="customer"
+          onClose={() => {
+            setShowReceipt(false);
+            setReceiptOrder(null);
+            setReceiptTransaction(null);
+          }}
+          transaction={receiptTransaction ?? undefined}
+        />
+      )}
     </View>
   );
 }

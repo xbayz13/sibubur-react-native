@@ -21,6 +21,8 @@ import {
   type CreateTransactionDto,
 } from '@/lib/services';
 import { getErrorMessage } from '@/lib/error-utils';
+import { shouldShowCustomerPrintButton } from '@/lib/print-settings';
+import ReceiptPrint from '@/components/ReceiptPrint';
 import type { Order, Store, PaymentMethod } from '@/types';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -84,6 +86,13 @@ export default function OrdersScreen() {
   const [showDetail, setShowDetail] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+  const [receiptTransaction, setReceiptTransaction] = useState<{
+    amount: number;
+    change?: number;
+    paymentMethod?: { name: string };
+  } | null>(null);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
 
@@ -167,14 +176,25 @@ export default function OrdersScreen() {
         amount,
         storeId: selectedStoreId!,
       }),
-    onSuccess: () => {
+    onSuccess: (transaction) => {
       setShowPayment(false);
       setShowDetail(false);
-      setSelectedOrder(null);
       setSelectedPaymentMethodId(null);
       setPaymentAmount('');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       showToast('Pembayaran berhasil', 'success');
+      if (shouldShowCustomerPrintButton() && transaction.order) {
+        const orderTotal = Number(transaction.order.totalAmount);
+        const change = Math.max(0, transaction.amount - orderTotal);
+        setReceiptOrder(transaction.order);
+        setReceiptTransaction({
+          amount: transaction.amount,
+          change,
+          paymentMethod: transaction.paymentMethod,
+        });
+        setShowReceipt(true);
+      }
+      setSelectedOrder(null);
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       showToast(err?.response?.data?.message ?? 'Gagal memproses pembayaran', 'error');
@@ -468,6 +488,19 @@ export default function OrdersScreen() {
           </>
         )}
       </Modal>
+
+      {showReceipt && receiptOrder && shouldShowCustomerPrintButton() && (
+        <ReceiptPrint
+          order={receiptOrder}
+          type="customer"
+          onClose={() => {
+            setShowReceipt(false);
+            setReceiptOrder(null);
+            setReceiptTransaction(null);
+          }}
+          transaction={receiptTransaction ?? undefined}
+        />
+      )}
     </View>
   );
 }
