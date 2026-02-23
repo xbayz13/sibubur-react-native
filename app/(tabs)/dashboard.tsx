@@ -16,6 +16,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { reportsService } from '@/lib/services/reports';
 import { suppliesService } from '@/lib/services/supplies';
+import { bmkgService } from '@/lib/services/bmkg';
 import { getLocalDateString } from '@/lib/date-utils';
 
 interface DailyStats {
@@ -104,6 +105,13 @@ export default function DashboardScreen() {
     staleTime: 60 * 1000,
   });
 
+  const { data: weatherData, isLoading: weatherLoading } = useQuery({
+    queryKey: ['weather-bmkg'],
+    queryFn: () => bmkgService.getCurrentWeather(),
+    staleTime: 30 * 60 * 1000, // 30 menit
+    retry: 1,
+  });
+
   const onRefresh = useCallback(() => refetch(), [refetch]);
 
   useEffect(() => {
@@ -162,6 +170,27 @@ export default function DashboardScreen() {
         </View>
         <Button title="Keluar" variant="outline" size="sm" onPress={logout} />
       </View>
+
+      {/* Cuaca BMKG */}
+      <Card style={styles.weatherCard}>
+        <Text style={styles.weatherTitle}>Prakiraan Cuaca (BMKG)</Text>
+        {weatherLoading ? (
+          <Text style={styles.weatherLoading}>Memuat data cuaca...</Text>
+        ) : weatherData ? (
+          <View style={styles.weatherContent}>
+            <View style={styles.weatherMain}>
+              <Text style={styles.weatherTemp}>{weatherData.temperature}°C</Text>
+              <Text style={styles.weatherCondition}>{weatherData.condition}</Text>
+            </View>
+            <View style={styles.weatherDetails}>
+              <Text style={styles.weatherDetail}>Kelembaban: {weatherData.humidity}%</Text>
+              <Text style={styles.weatherDetail}>Angin: {weatherData.windSpeed} m/s {weatherData.windDirection}</Text>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.weatherLoading}>Data cuaca tidak tersedia</Text>
+        )}
+      </Card>
 
       {/* Stats Cards */}
       <View style={styles.statsGrid}>
@@ -316,6 +345,49 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#111827',
+  },
+  weatherCard: {
+    backgroundColor: '#eef2ff',
+    borderColor: '#818cf8',
+    marginBottom: 20,
+  },
+  weatherTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4f46e5',
+    marginBottom: 8,
+  },
+  weatherLoading: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  weatherContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  weatherMain: {
+    flex: 1,
+  },
+  weatherTemp: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  weatherCondition: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  weatherDetails: {
+    flex: 1,
+  },
+  weatherDetail: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
   },
   chart: {
     marginVertical: 8,

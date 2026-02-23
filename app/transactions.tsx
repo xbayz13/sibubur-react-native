@@ -54,9 +54,12 @@ export default function TransactionsScreen() {
   const transactions = transactionsData?.data ?? [];
 
   useEffect(() => {
-    if (user?.storeId) setSelectedStoreId(user.storeId);
-    else if (stores.length > 0 && !selectedStoreId) setSelectedStoreId(stores[0].id);
-  }, [user?.storeId, stores, selectedStoreId]);
+    if (user?.storeId) {
+      setSelectedStoreId(user.storeId);
+    } else if (stores.length > 0) {
+      setSelectedStoreId((prev) => (prev === undefined ? stores[0].id : prev));
+    }
+  }, [user?.storeId, stores]);
 
   const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
 

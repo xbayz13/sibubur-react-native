@@ -30,6 +30,12 @@ export default function SuppliesScreen() {
   const [filter, setFilter] = useState<Filter>('all');
   const [restockSupply, setRestockSupply] = useState<Supply | null>(null);
   const [restockQty, setRestockQty] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addName, setAddName] = useState('');
+  const [addUnit, setAddUnit] = useState('');
+  const [addStock, setAddStock] = useState('');
+  const [addMinStock, setAddMinStock] = useState('');
+  const [addPrice, setAddPrice] = useState('');
 
   const { data: suppliesData, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['supplies', filter],
@@ -37,6 +43,24 @@ export default function SuppliesScreen() {
       filter === 'low-stock'
         ? suppliesService.getLowStock().then((items) => ({ data: items, total: items.length }))
         : suppliesService.getAll({ limit: 100 }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (dto: { name: string; unit: string; stock: number; minStock: number; price?: number }) =>
+      suppliesService.create(dto),
+    onSuccess: () => {
+      showToast('Persediaan berhasil ditambahkan', 'success');
+      setShowAddForm(false);
+      setAddName('');
+      setAddUnit('');
+      setAddStock('');
+      setAddMinStock('');
+      setAddPrice('');
+      queryClient.invalidateQueries({ queryKey: ['supplies'] });
+    },
+    onError: (err: unknown) => {
+      showToast(getErrorMessage(err), 'error');
+    },
   });
 
   const restockMutation = useMutation({
@@ -66,6 +90,22 @@ export default function SuppliesScreen() {
   const handleRestock = (supply: Supply) => {
     setRestockSupply(supply);
     setRestockQty('');
+  };
+
+  const handleAddSupply = () => {
+    const stock = parseInt(addStock, 10);
+    const minStock = parseInt(addMinStock, 10);
+    if (!addName.trim() || !addUnit.trim() || isNaN(stock) || stock < 0 || isNaN(minStock) || minStock < 0) {
+      showToast('Lengkapi nama, unit, stok, dan stok minimum', 'error');
+      return;
+    }
+    createMutation.mutate({
+      name: addName.trim(),
+      unit: addUnit.trim(),
+      stock,
+      minStock,
+      price: addPrice ? parseFloat(addPrice) : undefined,
+    });
   };
 
   const handleRestockSubmit = () => {
@@ -116,6 +156,8 @@ export default function SuppliesScreen() {
         </Pressable>
         <Text style={styles.title}>Persediaan</Text>
       </View>
+
+      <Button title="+ Tambah Persediaan" size="sm" onPress={() => setShowAddForm(true)} style={styles.addBtn} />
 
       {lowStockCount > 0 && filter === 'all' && (
         <View style={styles.alert}>
@@ -181,6 +223,20 @@ export default function SuppliesScreen() {
         }
       />
 
+      {showAddForm && (
+        <Modal visible onClose={() => setShowAddForm(false)} title="Tambah Persediaan">
+          <Input label="Nama" value={addName} onChangeText={setAddName} placeholder="Beras, Gula, dll" />
+          <Input label="Unit" value={addUnit} onChangeText={setAddUnit} placeholder="kg, liter, pcs" />
+          <Input label="Stok Awal" value={addStock} onChangeText={setAddStock} placeholder="0" keyboardType="numeric" />
+          <Input label="Stok Minimum" value={addMinStock} onChangeText={setAddMinStock} placeholder="0" keyboardType="numeric" />
+          <Input label="Harga/Unit (opsional)" value={addPrice} onChangeText={setAddPrice} placeholder="0" keyboardType="numeric" />
+          <View style={styles.modalActions}>
+            <Button title="Batal" variant="outline" onPress={() => setShowAddForm(false)} style={styles.modalBtn} />
+            <Button title="Simpan" onPress={handleAddSupply} loading={createMutation.isPending} style={styles.modalBtn} />
+          </View>
+        </Modal>
+      )}
+
       {restockSupply && (
         <Modal
           visible
@@ -225,6 +281,7 @@ const styles = StyleSheet.create({
   },
   back: { fontSize: 16, color: '#4f46e5', marginBottom: 8 },
   title: { fontSize: 22, fontWeight: '600', color: '#111827' },
+  addBtn: { marginHorizontal: 16, marginBottom: 8 },
   alert: {
     margin: 16,
     padding: 12,

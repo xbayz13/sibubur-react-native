@@ -9,6 +9,7 @@ export default function MasterDataLayout() {
       <Stack.Screen name="product-addons" />
       <Stack.Screen name="stores" />
       <Stack.Screen name="expense-categories" />
+      <Stack.Screen name="employees" />
     </Stack>
   );
 }

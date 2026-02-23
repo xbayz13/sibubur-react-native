@@ -68,10 +68,12 @@ export default function ExpensesScreen() {
   const expenses: Expense[] = expensesData?.data ?? [];
 
   useEffect(() => {
-    if (user?.storeId) setSelectedStoreId(user.storeId);
-    else if (stores.length > 0 && !selectedStoreId)
-      setSelectedStoreId(stores[0].id);
-  }, [user?.storeId, stores, selectedStoreId]);
+    if (user?.storeId) {
+      setSelectedStoreId(user.storeId);
+    } else if (stores.length > 0) {
+      setSelectedStoreId((prev) => (prev === undefined ? stores[0].id : prev));
+    }
+  }, [user?.storeId, stores]);
 
   const createMutation = useMutation({
     mutationFn: (dto: { expenseCategoryId: number; storeId: number; totalAmount: number }) =>

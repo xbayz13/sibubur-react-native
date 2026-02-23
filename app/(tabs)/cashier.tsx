@@ -77,10 +77,10 @@ export default function CashierScreen() {
   useEffect(() => {
     if (user?.storeId) {
       setSelectedStoreId(user.storeId);
-    } else if (stores.length > 0 && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
+    } else if (stores.length > 0) {
+      setSelectedStoreId((prev) => (prev === undefined ? stores[0].id : prev));
     }
-  }, [user?.storeId, stores, selectedStoreId]);
+  }, [user?.storeId, stores]);
 
   const filteredProducts = useMemo(() => {
     let filtered = products;

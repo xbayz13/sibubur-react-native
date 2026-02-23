@@ -86,9 +86,12 @@ export default function ProductionsScreen() {
   const productions = productionsData?.data ?? [];
 
   useEffect(() => {
-    if (user?.storeId) setSelectedStoreId(user.storeId);
-    else if (stores.length > 0 && !selectedStoreId) setSelectedStoreId(stores[0].id);
-  }, [user?.storeId, stores, selectedStoreId]);
+    if (user?.storeId) {
+      setSelectedStoreId(user.storeId);
+    } else if (stores.length > 0) {
+      setSelectedStoreId((prev) => (prev === undefined ? stores[0].id : prev));
+    }
+  }, [user?.storeId, stores]);
 
   const createMutation = useMutation({
     mutationFn: (data: CreateProductionDto) => productionsService.create(data),
@@ -116,7 +119,11 @@ export default function ProductionsScreen() {
       showToast('Pilih toko', 'error');
       return;
     }
-    const porridge = parseFloat(formPorridgeAmount) || undefined;
+    const parsed = parseFloat(formPorridgeAmount);
+    const porridge =
+      formPorridgeAmount === '' || formPorridgeAmount === undefined || Number.isNaN(parsed)
+        ? undefined
+        : parsed;
     const supplyItems = formSupplies
       .filter((s) => s.supplyId && parseInt(String(s.quantity), 10) > 0)
       .map((s) => ({ supplyId: s.supplyId, quantity: parseInt(String(s.quantity), 10) }));

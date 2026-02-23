@@ -9,6 +9,7 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -19,6 +20,7 @@ import {
   transactionsService,
   type CreateTransactionDto,
 } from '@/lib/services';
+import { getErrorMessage } from '@/lib/error-utils';
 import type { Order, Store, PaymentMethod } from '@/types';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -26,7 +28,52 @@ import Input from '@/components/ui/Input';
 
 type OrderFilter = 'open' | 'all';
 
+function EditOrderForm({
+  order,
+  onSave,
+  onCancel,
+  loading,
+}: {
+  order: Order;
+  onSave: (customerName: string) => void;
+  onCancel: () => void;
+  loading: boolean;
+}) {
+  const [customerName, setCustomerName] = useState(order.customerName || '');
+  return (
+    <>
+      <Input
+        label="Nama Pelanggan"
+        value={customerName}
+        onChangeText={setCustomerName}
+        placeholder="Nama pelanggan (opsional)"
+      />
+      <View style={styles.itemList}>
+        {order.orderItems?.map((oi) => (
+          <Text key={oi.id} style={styles.itemListRow}>
+            {oi.quantity}x {oi.product?.name}
+            {oi.orderItemAddons?.map((a) => ` + ${a.quantity}x ${a.addon?.name}`).join('')}
+          </Text>
+        ))}
+      </View>
+      <Text style={styles.editNote}>
+        Catatan: Untuk mengubah item pesanan, batalkan pesanan dan buat pesanan baru.
+      </Text>
+      <View style={styles.modalActions}>
+        <Button title="Batal" variant="outline" onPress={onCancel} style={styles.modalBtn} />
+        <Button
+          title="Simpan"
+          onPress={() => onSave(customerName)}
+          loading={loading}
+          style={styles.modalBtn}
+        />
+      </View>
+    </>
+  );
+}
+
 export default function OrdersScreen() {
+  const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -35,6 +82,7 @@ export default function OrdersScreen() {
   const [filter, setFilter] = useState<OrderFilter>('open');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -78,10 +126,10 @@ export default function OrdersScreen() {
   useEffect(() => {
     if (user?.storeId) {
       setSelectedStoreId(user.storeId);
-    } else if (stores.length > 0 && !selectedStoreId) {
-      setSelectedStoreId(stores[0].id);
+    } else if (stores.length > 0) {
+      setSelectedStoreId((prev) => (prev === undefined ? stores[0].id : prev));
     }
-  }, [user?.storeId, stores, selectedStoreId]);
+  }, [user?.storeId, stores]);
 
   const cancelOrderMutation = useMutation({
     mutationFn: (id: number) => ordersService.cancel(id),
@@ -93,6 +141,21 @@ export default function OrdersScreen() {
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {
       showToast(err?.response?.data?.message ?? 'Gagal membatalkan', 'error');
+    },
+  });
+
+  const updateOrderMutation = useMutation({
+    mutationFn: ({ orderId, customerName }: { orderId: number; customerName?: string }) =>
+      ordersService.update(orderId, { customerName: customerName?.trim() || undefined }),
+    onSuccess: () => {
+      setShowEdit(false);
+      setShowDetail(false);
+      setSelectedOrder(null);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      showToast('Pesanan berhasil diperbarui', 'success');
+    },
+    onError: (err: unknown) => {
+      showToast(getErrorMessage(err), 'error');
     },
   });
 
@@ -198,6 +261,15 @@ export default function OrdersScreen() {
     <View style={styles.container}>
       {/* Store selector & filter */}
       <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Pesanan</Text>
+          <Pressable
+            style={styles.createOrderBtn}
+            onPress={() => router.push('/(tabs)/cashier')}
+          >
+            <Text style={styles.createOrderBtnText}>+ Buat Pesanan</Text>
+          </Pressable>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storeScroll}>
           {stores.map((s) => (
             <Pressable
@@ -287,6 +359,15 @@ export default function OrdersScreen() {
             {selectedOrder.status === 'open' && (
               <View style={styles.detailActions}>
                 <Button
+                  title="Edit"
+                  variant="outline"
+                  onPress={() => {
+                    setShowDetail(false);
+                    setShowEdit(true);
+                  }}
+                  style={styles.detailBtn}
+                />
+                <Button
                   title="Bayar"
                   onPress={() => openPayModal(selectedOrder)}
                   style={styles.detailBtn}
@@ -302,6 +383,30 @@ export default function OrdersScreen() {
               </View>
             )}
           </>
+        )}
+      </Modal>
+
+      {/* Edit order modal */}
+      <Modal
+        visible={showEdit}
+        onClose={() => {
+          setShowEdit(false);
+          if (!showPayment) setSelectedOrder(null);
+        }}
+        title={`Edit ${selectedOrder?.orderNumber}`}
+      >
+        {selectedOrder && (
+          <EditOrderForm
+            order={selectedOrder}
+            onSave={(customerName) =>
+              updateOrderMutation.mutate({
+                orderId: selectedOrder.id,
+                customerName,
+              })
+            }
+            onCancel={() => setShowEdit(false)}
+            loading={updateOrderMutation.isPending}
+          />
         )}
       </Modal>
 
@@ -371,6 +476,15 @@ const styles = StyleSheet.create({
   centered: { padding: 24, alignItems: 'center' },
   loadingText: { color: '#6b7280' },
   header: { padding: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  createOrderBtn: {
+    backgroundColor: '#4f46e5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  createOrderBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   storeScroll: { marginBottom: 8 },
   storeChip: {
     paddingHorizontal: 14,
@@ -431,4 +545,9 @@ const styles = StyleSheet.create({
   paymentMethodBtnActive: { borderColor: '#4f46e5', backgroundColor: '#eef2ff' },
   paymentMethodText: { fontSize: 16 },
   paymentMethodTextActive: { color: '#4f46e5', fontWeight: '600' },
+  itemList: { marginBottom: 12 },
+  itemListRow: { fontSize: 14, color: '#6b7280', marginBottom: 4 },
+  editNote: { fontSize: 12, color: '#92400e', backgroundColor: '#fef3c7', padding: 12, borderRadius: 8, marginBottom: 12 },
+  modalActions: { flexDirection: 'row', gap: 12 },
+  modalBtn: { flex: 1 },
 });

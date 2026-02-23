@@ -35,6 +35,12 @@ const SECTIONS = [
     icon: 'card' as const,
     permission: 'expense-categories.read',
   },
+  {
+    key: 'employees',
+    title: 'Karyawan',
+    icon: 'people' as const,
+    permission: 'employees.read',
+  },
 ] as const;
 
 export default function MasterDataIndexScreen() {
