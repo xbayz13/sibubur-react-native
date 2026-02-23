@@ -21,7 +21,7 @@ import {
   transactionsService,
   CreateTransactionDto,
 } from '@/lib/services';
-import type { Product, Store, PaymentMethod, CreateOrderDto } from '@/types';
+import type { Product, Store, PaymentMethod, CreateOrderDto, Order } from '@/types';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
@@ -51,7 +51,7 @@ export default function CashierScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showPayment, setShowPayment] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState<{ id: number } | null>(null);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
 
@@ -200,6 +200,7 @@ export default function CashierScreen() {
     mutationFn: (order: CreateOrderDto) => ordersService.create(order),
     onSuccess: (order) => {
       setCurrentOrder(order);
+      setPaymentAmount(String(order.totalAmount));
       setShowPayment(true);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -261,8 +262,9 @@ export default function CashierScreen() {
 
   const handlePayment = useCallback(() => {
     if (!currentOrder || !selectedStoreId || !selectedPaymentMethodId) return;
+    const orderTotal = Number(currentOrder.totalAmount);
     const amount = parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) || 0;
-    if (amount < total) {
+    if (amount < orderTotal) {
       showToast('Jumlah pembayaran kurang', 'error');
       return;
     }
@@ -277,7 +279,6 @@ export default function CashierScreen() {
     selectedStoreId,
     selectedPaymentMethodId,
     paymentAmount,
-    total,
     createTransactionMutation,
     showToast,
   ]);
@@ -486,7 +487,7 @@ export default function CashierScreen() {
         title="Pembayaran"
       >
         <Text style={styles.modalTotal}>
-          Total: Rp {total.toLocaleString('id-ID')}
+          Total: Rp {(currentOrder ? Number(currentOrder.totalAmount) : 0).toLocaleString('id-ID')}
         </Text>
         <Text style={styles.modalLabel}>Metode Pembayaran</Text>
         {paymentMethods.map((pm) => (
@@ -519,9 +520,10 @@ export default function CashierScreen() {
           title="Proses Pembayaran"
           onPress={handlePayment}
           disabled={
+            !currentOrder ||
             !selectedPaymentMethodId ||
             !paymentAmount ||
-            parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) < total ||
+            parseFloat(paymentAmount.replace(/[^0-9.]/g, '')) < Number(currentOrder?.totalAmount ?? 0) ||
             createTransactionMutation.isPending
           }
           loading={createTransactionMutation.isPending}

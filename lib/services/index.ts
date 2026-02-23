@@ -7,5 +7,9 @@ export {
   transactionsService,
   type CreateTransactionDto,
 } from './transactions';
+export {
+  productionsService,
+  type CreateProductionDto,
+} from './productions';
 export { reportsService } from './reports';
 export { suppliesService } from './supplies';

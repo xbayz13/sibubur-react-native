@@ -35,6 +35,8 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="productions" options={{ presentation: 'card' }} />
+      <Stack.Screen name="transactions" options={{ presentation: 'card' }} />
     </Stack>
   );
 }
